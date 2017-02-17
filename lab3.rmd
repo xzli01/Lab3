@@ -8,7 +8,8 @@ output: pdf_document
 ```{r, warning = F, message = F}
 library(tidyverse)
 library(readxl)
-setwd("~/Documents/STAT 585X/In Class Activities/Week6/Lab3")
+
+#setwd("~/Documents/STAT 585X/In Class Activities/Week6/Lab3")
 
 f1_s1 <- readxl::read_excel("Spreadsheets/FileOne.xlsx", sheet=1) 
 f1_s2 <- readxl::read_excel("Spreadsheets/FileOne.xlsx", sheet=2)
@@ -75,14 +76,78 @@ file1_post_clean <- file1_post_clean[,-c(3:7)]
 file1_clean <- full_join(file1_pre_clean, file1_post_clean, by = c("ID", "semester","test", "Pre_Post", "Answer", "Value")) %>% as.data.frame() 
 ```
 
+Copy basic information from "Pre" to "Post"
+```{r}
+#Change PRE to Pre, change POST to post
+#Copy GENDER, Characteristics, Treatment Part1 and Treatment Part 2 from "Pre" to "Post" of same ID.
+
+file1_clean <- file1_clean %>% mutate(Pre_Post = replace(Pre_Post, Pre_Post=="PRE", "Pre"))
+file1_clean <- file1_clean %>% mutate(Pre_Post = replace(Pre_Post, Pre_Post=="POST", "Post"))
+file1_clean <- file1_clean %>% mutate(
+  `Normalized Changes` = replace(`Normalized Changes`, 
+                                 Pre_Post=="Post",file1_clean$`Normalized Changes`[Pre_Post=="Pre"]))
+file1_clean <- file1_clean %>% mutate(
+  GENDER = replace(GENDER, Pre_Post=="Post",file1_clean$GENDER[Pre_Post=="Pre"]))
+file1_clean <- file1_clean %>% mutate(
+  Characteristic= replace( Characteristic, Pre_Post=="Post",file1_clean$ Characteristic[Pre_Post=="Pre"]))
+file1_clean <- file1_clean %>% mutate(
+  `Treatment Part 1`= replace(`Treatment Part 1`,                               Pre_Post=="Post",file1_clean$ `Treatment Part 1`[Pre_Post=="Pre"]))
+file1_clean <- file1_clean %>% mutate(
+  `Treatment Part 2 `= replace(`Treatment Part 2 `, Pre_Post=="Post",
+                               file1_clean$ `Treatment Part 2 `[Pre_Post=="Pre"]))
+
+file1_clean %>%  arrange(ID) %>% head()  ##clean file1
+```
+
 File2
 ```{r}
+file2_pre <- file2 %>% filter(Pre_Post %in% c("Pre", "PRE")) %>% as.data.frame()
+file2_pre_clean <- file2_pre %>% gather(key = Answer, value = Value, 3:35)
+
+file2_post <- file2 %>% filter(Pre_Post %in% c("Post", "POST")) %>% as.data.frame()
+file2_post_clean <- file2_post %>% gather(key = Answer, value = Value, 3:35)
+file2_post_clean <- file2_post_clean[,-c(3:7)]
 
 
+
+file2_clean <- full_join(file2_pre_clean, file2_post_clean, by = c("ID", "semester","test", "Pre_Post", "Answer", "Value")) %>% as.data.frame() 
 
 ```
 
+Copy basic information from "Pre" to "Post"
+```{r}
+#Change PRE to Pre, change POST to post
+#Copy GENDER, Characteristics, Treatment Part1 and Treatment Part 2 from "Pre" to "Post" of same ID.
 
+file2_clean <- file2_clean %>% mutate(Pre_Post = replace(Pre_Post, Pre_Post=="PRE", "Pre"))
+file2_clean <- file2_clean %>% mutate(Pre_Post = replace(Pre_Post, Pre_Post=="POST", "Post"))
+file2_clean <- file2_clean %>% mutate(
+  `Normalized Change` = replace(`Normalized Change`, 
+                                 Pre_Post=="Post",file2_clean$`Normalized Change`[Pre_Post=="Pre"]))
+file2_clean <- file2_clean %>% mutate(
+  GENDER = replace(GENDER, Pre_Post=="Post",file2_clean$GENDER[Pre_Post=="Pre"]))
+file2_clean <- file2_clean %>% mutate(
+  Characteristic= replace( Characteristic, Pre_Post=="Post",file2_clean$ Characteristic[Pre_Post=="Pre"]))
+file2_clean <- file2_clean %>% mutate(
+  `Treatment Part 1`= replace(`Treatment Part 1`,Pre_Post=="Post",
+                              file2_clean$ `Treatment Part 1`[Pre_Post=="Pre"]))
+file2_clean <- file2_clean %>% mutate(
+  `Treatment Part 2`= replace(`Treatment Part 2`, Pre_Post=="Post",
+                               file2_clean$ `Treatment Part 2`[Pre_Post=="Pre"]))
 
+file2_clean %>% arrange(ID) %>% head()  ##clean file2
+```
+
+Make column name of semester 1 and semester 2 the same
+```{r}
+colnames(file1_clean) <- colnames(file2_clean)
+```
+
+Summarize total value and normalized value of semester 1 and 2
+```{r}
+file1_sum <- file1_clean %>% filter(Answer  == "Total")
+file2_sum <- file2_clean %>% filter(Answer  == "Total")
+file_sum <- rbind(file1_sum, file2_sum)  ##clean data summary
+```
 
 
