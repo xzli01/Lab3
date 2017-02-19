@@ -1,7 +1,7 @@
 ---
 title: 'Lab #3'
-author: "Amy Crawford"
-date: "February 16, 2017"
+author: "Amy Crawford, Lawrence Hii, Xiangzhen Li"
+date: "February 20, 2017"
 output: pdf_document
 ---
 
@@ -9,27 +9,21 @@ output: pdf_document
 library(tidyverse)
 library(readxl)
 
-#setwd("~/Documents/STAT 585X/In Class Activities/Week6/Lab3")
-
-f1_s1 <- readxl::read_excel("Spreadsheets/FileOne.xlsx", sheet=1) 
+f1_s1 <- readxl::read_excel("Spreadsheets/FileOne.xlsx", sheet=1)
 f1_s2 <- readxl::read_excel("Spreadsheets/FileOne.xlsx", sheet=2)
 f1_s3 <- readxl::read_excel("Spreadsheets/FileOne.xlsx", sheet=3)
 f1_s4 <- readxl::read_excel("Spreadsheets/FileOne.xlsx", sheet=4)
 
-f1_s1$semester <- "Sem1"
-f1_s2$semester <- "Sem2"
-f1_s3$semester <- "Sem3"
-f1_s4$semester <- "Sem4"
+f1_s1$semester <- "Sem1"; f1_s2$semester <- "Sem2"
+f1_s3$semester <- "Sem3"; f1_s4$semester <- "Sem4"
 
 f2_s1 <- readxl::read_excel("Spreadsheets/FileTwo.xlsx", sheet=1)
 f2_s2 <- readxl::read_excel("Spreadsheets/FileTwo.xlsx", sheet=2)
 f2_s3 <- readxl::read_excel("Spreadsheets/FileTwo.xlsx", sheet=3)
 f2_s4 <- readxl::read_excel("Spreadsheets/FileTwo.xlsx", sheet=4)
 
-f2_s1$semester <- "Sem1"
-f2_s2$semester <- "Sem2"
-f2_s3$semester <- "Sem3"
-f2_s4$semester <- "Sem4"
+f2_s1$semester <- "Sem1"; f2_s2$semester <- "Sem2" 
+f2_s3$semester <- "Sem3"; f2_s4$semester <- "Sem4"
 ```
 
 
@@ -55,7 +49,6 @@ file2 <- rbind(f2_s1, f2_s2, f2_s3, f2_s4)
 
 file2$test <- "Test2"
 names(file2) <- c("ID", "Pre_Post", names(file2[,3:42]))
-
 ```
 
 
@@ -70,7 +63,6 @@ file1_pre_clean <- file1_pre %>% gather(key = Answer, value = Value, 3:13)
 file1_post <- file1 %>% filter(Pre_Post %in% c("Post", "POST")) %>% as.data.frame()
 file1_post_clean <- file1_post %>% gather(key = Answer, value = Value, 3:13)
 file1_post_clean <- file1_post_clean[,-c(3:7)]
-
 
 
 file1_clean <- full_join(file1_pre_clean, file1_post_clean, by = c("ID", "semester","test", "Pre_Post", "Answer", "Value")) %>% as.data.frame() 
@@ -109,9 +101,7 @@ file2_post_clean <- file2_post %>% gather(key = Answer, value = Value, 3:35)
 file2_post_clean <- file2_post_clean[,-c(3:7)]
 
 
-
 file2_clean <- full_join(file2_pre_clean, file2_post_clean, by = c("ID", "semester","test", "Pre_Post", "Answer", "Value")) %>% as.data.frame() 
-
 ```
 
 Copy basic information from "Pre" to "Post"
@@ -150,4 +140,53 @@ file2_sum <- file2_clean %>% filter(Answer  == "Total")
 file_sum <- rbind(file1_sum, file2_sum)  ##clean data summary
 ```
 
+## Plots
+
+### Test 1
+```{r, fig.width=6, fig.height=5}
+file1_sum <- file1_sum %>% mutate(Pre_Post2 = factor(Pre_Post, levels = rev(levels(as.factor(Pre_Post)))), 
+                                  semester2 = factor(file1_sum$semester))
+
+levels(file1_sum$semester2) <- c("Semester 1", "Semester 2", "Semester 3", "Semester 4")
+
+## Boxplots of Pre & Post total scores in each semester
+ggplot(data = file1_sum, aes(x = Pre_Post2, y = Value)) + 
+  geom_boxplot() + facet_wrap(~semester2) + 
+  ylab("Total Score") + 
+  xlab("Pre- versus Post-Test") + 
+  ggtitle("Test 1")
+```
+
+```{r, fig.width=7, fig.height=5}
+## Fill by GENDER
+ggplot(data = file1_sum, aes(x = Pre_Post2, y = Value, fill = GENDER)) + 
+  geom_boxplot() + facet_wrap(~semester2) + 
+  ylab("Total Score") + 
+  xlab("Pre- versus Post-Test") + 
+  ggtitle("Test 1")
+```
+
+### Test 2
+```{r, fig.width=6, fig.height=5}
+file2_sum <- file2_sum %>% mutate(Pre_Post2 = factor(Pre_Post, levels = rev(levels(as.factor(Pre_Post)))), 
+                                  semester2 = factor(file2_sum$semester))
+
+levels(file2_sum$semester2) <- c("Semester 1", "Semester 2", "Semester 3", "Semester 4")
+
+## Boxplots of Pre & Post total scores in each semester
+ggplot(data = file2_sum, aes(x = Pre_Post2, y = as.numeric(Value))) + 
+  geom_boxplot() + facet_wrap(~semester2) + 
+  ylab("Total Score") + 
+  xlab("Pre- versus Post-Test") + 
+  ggtitle("Test 2")
+```
+
+```{r, fig.width=7, fig.height=5}
+# Fill by GENDER
+ggplot(data = file2_sum, aes(x = Pre_Post2, y = as.numeric(Value), fill = GENDER)) + 
+  geom_boxplot() + facet_wrap(~semester2) + 
+  ylab("Total Score") + 
+  xlab("Pre- versus Post-Test") + 
+  ggtitle("Test 2")
+```
 
